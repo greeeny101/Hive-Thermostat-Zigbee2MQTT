@@ -1,4 +1,4 @@
-# Hive-Thermostat-Zigbee2MQTT
+# Hive Thermostat Zigbee2MQTT
 
 
 Configuration for a Hive thermostat using Zigbee2MQTT
