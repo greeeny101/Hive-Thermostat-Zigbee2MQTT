@@ -104,7 +104,6 @@
             "temperature_setpoint_hold_duration": {{states("input_number.heating_boost_duration")}} 
           }'
 
-
     - conditions:
       - condition: template
         value_template: '{{ trigger.payload == "auto" }} '

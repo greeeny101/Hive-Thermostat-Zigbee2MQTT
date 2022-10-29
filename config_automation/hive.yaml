@@ -39,7 +39,7 @@
     
 - id: '1666513667863'
   alias: 'Heating System Mode'
-  description: ''
+  description: 'Publishes a system mode command to the thermostat in the correct format and values'
   trigger:
   - platform: mqtt
     topic: zigbee2mqtt/heating_proxy/system_mode
@@ -47,7 +47,6 @@
   condition: []
   action:
   - choose:
-
     - conditions:
       - condition: template
         value_template: '{{ trigger.payload == "off" }} '
