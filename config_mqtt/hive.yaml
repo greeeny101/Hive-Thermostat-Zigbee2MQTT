@@ -1,121 +1,70 @@
-- id: '1666548062412'
-  alias: 'Heating Set Temperature'
-  description: ''
-  trigger:
-  - platform: mqtt
-    topic: zigbee2mqtt/heating_proxy/occupied_heating_setpoint
-  condition:
-  - condition: template
-    value_template: '{{trigger.payload != 1}}'
-  action:
-  - choose:
-    - conditions:
-      - condition: template
-        value_template: '{{ states("sensor.heating_system_mode") == "heat"}}'
-      sequence:
-      - service: mqtt.publish
-        data:
-          topic: zigbee2mqtt/heating/set
-          payload_template: '{"occupied_heating_setpoint": "{{trigger.payload}}"}' 
-    - conditions:
-      - condition: template
-        value_template: '{{ states("sensor.heating_system_mode") == "off"}}'
-      sequence:
-      - service: mqtt.publish
-        data:
-          topic: zigbee2mqtt/heating/set
-          payload_template: '{"temperature_setpoint_hold": true, "system_mode": "heat" }'
-      - delay: 2
-      - service: mqtt.publish
-        data:
-          topic: zigbee2mqtt/heating/set
-          payload_template: '{
-            "temperature_setpoint_hold": true,
-            "system_mode": "heat",
-            "occupied_heating_setpoint": {{trigger.payload}},
-            "temperature_setpoint_hold_duration": 65535
-          }'
-  mode: single 
-    
-- id: '1666513667863'
-  alias: 'Heating System Mode'
-  description: ''
-  trigger:
-  - platform: mqtt
-    topic: zigbee2mqtt/heating_proxy/system_mode
-    id: system mode
-  condition: []
-  action:
-  - choose:
+sensor:
+  - unique_id: "heating_occupied_heating_setpoint"
+    name: "Heating Occupied Heating Setpoint"
+    state_topic: "zigbee2mqtt/heating"
+    unit_of_measurement: "°C"
+    value_template: "{{ value_json.occupied_heating_setpoint }}"
+    force_update: true
 
-    - conditions:
-      - condition: template
-        value_template: '{{ trigger.payload == "off" }} '
-      sequence:
-      - service: mqtt.publish
-        data:
-          topic: zigbee2mqtt/heating/set
-          payload_template: '{
-            "system_mode": "off",
-            "temperature_setpoint_hold_duration": 0,
-            "occupied_heating_setpoint": {{states("input_number.heating_frost_prevention")}}
-          }'
+  - unique_id: "heating_system_mode"
+    name: "Heating System Mode"
+    state_topic: "zigbee2mqtt/heating"
+    value_template: "{{ value_json.system_mode }}"
+    force_update: true
 
-    - conditions:
-      - condition: template
-        value_template: '{{ trigger.payload == "heat" and states("sensor.occupied_heating_setpoint") != 1}}'
-      sequence:
-      - service: mqtt.publish
-        data:
-          topic: zigbee2mqtt/heating/set
-          payload_template: '{"temperature_setpoint_hold": true, "system_mode": "heat" }'
-      - delay: 0.5
-      - service: mqtt.publish
-        data:
-          topic: zigbee2mqtt/heating/set
-          payload_template: '{
-            "temperature_setpoint_hold": true,
-            "system_mode": "heat",
-            "occupied_heating_setpoint": 18.0,
-            "temperature_setpoint_hold_duration": 65535 
-          }'
+  - unique_id: "heating_local_temperature"
+    name: "Heating Local temperature"
+    state_topic: "zigbee2mqtt/heating"
+    value_template: "{{ value_json.local_temperature | round(1, 'floor') }}"
+    force_update: true
 
-    - conditions:
-      - condition: template
-        value_template: '{{ trigger.payload == "cool" and states("sensor.occupied_heating_setpoint") != 1}}'
-      sequence:
-      - service: mqtt.publish
-        data:
-          topic: zigbee2mqtt/heating/set
-          payload_template: '{
-            "temperature_setpoint_hold": true,
-            "system_mode": "emergency_heating",
-            "occupied_heating_setpoint": {{states("input_number.heating_boost_temperature")}},
-            "temperature_setpoint_hold_duration": {{states("input_number.heating_boost_duration")}} 
-          }'
-      - delay: 0.5
-      - service: mqtt.publish
-        data:
-          topic: zigbee2mqtt/heating/set
-          payload_template: '{
-            "temperature_setpoint_hold": true,
-            "system_mode": "emergency_heating",
-            "occupied_heating_setpoint": {{states("input_number.heating_boost_temperature")}},
-            "temperature_setpoint_hold_duration": {{states("input_number.heating_boost_duration")}} 
-          }'
+  - unique_id: "heating_running_state"
+    name: "Heating Running State"
+    state_topic: "zigbee2mqtt/heating"
+    value_template: "{{ value_json.running_state }}"
+    force_update: true
 
-    - conditions:
-      - condition: template
-        value_template: '{{ trigger.payload == "auto" }} '
-      sequence:
-      - service: mqtt.publish
-        data:
-          topic: zigbee2mqtt/heating/set
-          payload_template: '{
-            "occupied_heating_setpoint": 1.0,
-            "system_mode": "heat",
-            "temperature_setpoint_hold": false,
-            "occupied_heating_setpoint": {{states("input_number.heating_frost_prevention")}},
-            "temperature_setpoint_hold_duration": 65535 
-          }'
-  mode: single
+  - unique_id: "heating_temperature_setpoint_hold"
+    name: "Heating Temperature Setpoint Hold"
+    state_topic: "zigbee2mqtt/heating"
+    force_update: true
+    value_template: "{{ value_json.temperature_setpoint_hold }}"
+
+climate:
+  unique_id: "heating_proxy"
+  name: Heating Proxy
+  max_temp: 32
+  min_temp: 12
+  precision: 0.5
+  retain: false
+  qos: 0
+  payload_on: 1
+  payload_off: 0
+  temperature_unit: "C"
+  modes:
+    - "auto"
+    - "off"
+    - "heat"
+    - "cool"
+
+  current_temperature_topic: "zigbee2mqtt/heating"
+  current_temperature_template: "{{value_json.local_temperature}}"
+
+  temperature_command_topic: "zigbee2mqtt/heating_proxy/occupied_heating_setpoint"
+  temperature_state_topic: "zigbee2mqtt/heating"
+  temperature_state_template: >-
+    {% if value_json.occupied_heating_setpoint != 1 %}
+      {{value_json.occupied_heating_setpoint}}
+    {% endif %}
+
+  mode_command_topic: "zigbee2mqtt/heating_proxy/system_mode"
+  mode_state_topic: "zigbee2mqtt/heating"
+  mode_state_template: >-
+    {% set system_mode = states("input_text.heating_current_system_mode") %}
+    {% if value_json.system_mode == 'heat' and system_mode == 'auto'  %}
+      auto
+    {% elif system_mode == "emergency_heating" %}
+      cool
+    {% else %}
+      {{ value_json.system_mode }}
+    {% endif %}

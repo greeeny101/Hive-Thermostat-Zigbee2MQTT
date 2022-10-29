@@ -1,3 +1,2 @@
-  heating_current_system_mode:
-    name: Heating Current System Mode
-    initial: "off"
+heating_current_system_mode:
+  name: Heating Current System Mode
