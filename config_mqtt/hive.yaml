@@ -63,7 +63,7 @@ climate:
     {% set system_mode = states("input_text.heating_current_system_mode") %}
     {% if value_json.system_mode == 'heat' and system_mode == 'auto'  %}
       auto
-    {% elif system_mode == "emergency_heating" %}
+    {% elif system_mode == "boost" %}
       cool
     {% else %}
       {{ value_json.system_mode }}
