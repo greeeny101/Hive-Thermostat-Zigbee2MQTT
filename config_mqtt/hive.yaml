@@ -1,0 +1,79 @@
+sensor:
+  - unique_id: "heating_occupied_heating_setpoint"
+    name: "Heating Occupied Heating Setpoint"
+    state_topic: "zigbee2mqtt/heating"
+    unit_of_measurement: "°C"
+    value_template: "{{ value_json.occupied_heating_setpoint }}"
+    force_update: true
+
+  - unique_id: "heating_system_mode"
+    name: "Heating System Mode"
+    state_topic: "zigbee2mqtt/heating"
+    value_template: "{{ value_json.system_mode }}"
+    force_update: true
+
+  - unique_id: "heating_local_temperature"
+    name: "Heating Local temperature"
+    state_topic: "zigbee2mqtt/heating"
+    value_template: "{{ value_json.local_temperature | round(1, 'floor') }}"
+    force_update: true
+
+  - unique_id: "heating_running_state"
+    name: "Heating Running State"
+    state_topic: "zigbee2mqtt/heating"
+    value_template: "{{ value_json.running_state }}"
+    force_update: true
+
+  - unique_id: "heating_temperature_setpoint_hold"
+    name: "Heating Temperature Setpoint Hold"
+    state_topic: "zigbee2mqtt/heating"
+    force_update: true
+    value_template: "{{ value_json.temperature_setpoint_hold }}"
+
+climate:
+  unique_id: "heating_proxy"
+  name: Heating Proxy
+  max_temp: 32
+  min_temp: 12
+  precision: 0.5
+  retain: false
+  qos: 0
+  payload_on: 1
+  payload_off: 0
+  temperature_unit: "C"
+  modes:
+    - "auto"
+    - "off"
+    - "heat"
+    - "cool"
+
+  # Listen for changes published by the thermostat
+  
+  mode_state_topic: "zigbee2mqtt/heating"
+  mode_state_template: >-
+    {% set current_system_mode = states("input_text.heating_current_system_mode") %}
+    {% if current_system_mode == 'auto' and value_json.system_mode == 'heat' %}
+      auto
+    {% elif current_system_mode == "boost" and value_json.system_mode == 'emergency_heating' %}
+      cool
+    {% else %}
+      {{ value_json.system_mode }}
+    {% endif %}
+
+  current_temperature_topic: "zigbee2mqtt/heating"
+  current_temperature_template: "{{value_json.local_temperature}}"
+
+  temperature_state_topic: "zigbee2mqtt/heating"
+  temperature_state_template: >-
+    {% if value_json.occupied_heating_setpoint != 1 %}
+      {{value_json.occupied_heating_setpoint}}
+    {% endif %}
+
+
+  # get changes in the climate component and republish on the topic
+  # (Rather than going directly to the thermostat)
+
+  temperature_command_topic: "zigbee2mqtt/heating_proxy/occupied_heating_setpoint"
+  mode_command_topic: "zigbee2mqtt/heating_proxy/system_mode"
+
+
