@@ -60,6 +60,7 @@ Input number and text Helpers
 Simple Thermostat. You can probably use others and adjust the 
 button config accordingly.
 
+<kbd>![alt text](https://github.com/greeeny101/Hive-Thermostat-Zigbee2MQTT/blob/main/Capture.PNG)</kbd>
 
 ## A few things This Does
 
