@@ -48,16 +48,21 @@ climate:
     - "cool"
 
   # Listen for changes published by the thermostat
-  
+
   mode_state_topic: "zigbee2mqtt/heating"
   mode_state_template: >-
-    {% set current_system_mode = states("input_text.heating_current_system_mode") %}
-    {% if current_system_mode == 'auto' and value_json.system_mode == 'heat' %}
+    {% if value_json.system_mode == 'heat' and
+      value_json.temperature_setpoint_hold_duration !=65535
+    %}
       auto
-    {% elif current_system_mode == "boost" and value_json.system_mode == 'emergency_heating' %}
+    {% elif value_json.system_mode == 'emergency_heating' %}
       cool
-    {% else %}
-      {{ value_json.system_mode }}
+    {% elif value_json.system_mode == 'heat' and
+      value_json.temperature_setpoint_hold_duration == 65535
+    %}
+      heat
+    {% elif value_json.system_mode == 'off'%}
+      off
     {% endif %}
 
   current_temperature_topic: "zigbee2mqtt/heating"
@@ -67,13 +72,16 @@ climate:
   temperature_state_template: >-
     {% if value_json.occupied_heating_setpoint != 1 %}
       {{value_json.occupied_heating_setpoint}}
+    {% elif states("sensor.heating_system_mode") == "off" %}
+      {{states("input_number.heating_frost_prevention")}}
+    {% elif states("sensor.heating_system_mode") == "heat" and
+      states("sensor.heating_temperature_setpoint_hold_duration") != 65536
+    %}
+      {{states("input_number.heating_frost_prevention")}}
     {% endif %}
-
 
   # get changes in the climate component and republish on the topic
   # (Rather than going directly to the thermostat)
 
   temperature_command_topic: "zigbee2mqtt/heating_proxy/occupied_heating_setpoint"
   mode_command_topic: "zigbee2mqtt/heating_proxy/system_mode"
-
-

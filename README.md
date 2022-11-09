@@ -1,14 +1,12 @@
 # Hive Thermostat Zigbee2MQTT
 
 
-Configuration for a Hive thermostat using  that aims to recreate the actions found
-on the hive remote - minus the schedule.
+Configuration for a Hive thermostat that aims to recreate the actions found
+on the hive remote
 
 ## Introduction
 
-
-
-The climate integration in HA sends MQTT messages to an exdpoint
+The climate integration in HA sends MQTT messages to a topic
 that is incompatible with what is expected from Zigbee2MQTT.
 This results in the thermostat receiving an unrecognised command. This
 causes the thermostat to set the __occupied heating setpoint__ to
@@ -32,8 +30,8 @@ it always jumps back to 1 degrees
 
 
 I have created a 'Proxy thermostat' using the MQTT HVAC integration. 
-Once connected to a Lovelace component we can catch the original
-request and re-publish the request  to a new MQTT endpoint 
+Once connected to a climate component, we can catch the original
+request and re-publish the request to a new MQTT topic 
 in the correct format. We can then subscribe to this in an 
 automation. When the automation picks this up, we have more 
 control of what actions to take, what needs to be set, when
@@ -65,32 +63,19 @@ button config accordingly.
 
 ## A few things This Does
 
-Sets the min and max value to 12 and 32 because we don't
- really want to go below the frost prevention temp anyway.
+* Aims to emulate the actions provided by the thermostat. In particular, schedules set in the thermostat are replicated 
+in the climate component
+* Maximum and Minimum temperature values set to 12 and 32 degrees respectively
+* Frost prevention temperature between 5 and 16 degrees via an input number. Initial 12 degrees
+* Boost temperature between 12 and 32 degrees via an input number. Initial set to 25 degrees
+* Boost duration between 5 and 45 minutes via an input number. Initial set to 25 degrees
+* Uses the _cool_ system mode to emulate the _boost_ function provided by the thermostat
+ __Requires a mapping between the cool and  boost mode in the heating component to work__
+* Prevents 1 degrees temperatures from being set in the component. Where applicable sets
+the frost prevention temperature instead
 
-Uses input number helpers to set defaults for
-Frost temperature, Boost temperature and boost duration.
-
-Uses an input helper text to keep track of the current system mode
-It just makes things easier.
-
-prevents temperatures of 1 degrees sent from the thermostat
-from being set unless the system mode has been set to '__off__'
-
-Republishes HA requests to thermostat in the correct order.
-
-Uses the '__cool__' system mode as the '__boost__' function. 
-(Requires the correct mapping in the  lovelace component used.
-e.g. Simple Thermostat)
-
-
-
-I've not set a schedule on the remote. It sends back extra data 
-that just gets in the way. Instead, all schedules are set 
-to the required frost temperature setting. The idea being the
-schedule will be controlled via HA. You can still increase the
-temperature when set to schedule, but it will be reset to the
-frost temperature when the current time span has reached te end
+Note that initial values will be reloaded when you restart the server. If you don't want this
+then remove the initial value to preserve the current value following a restart
 
 
 ## Simple Thermostat Config

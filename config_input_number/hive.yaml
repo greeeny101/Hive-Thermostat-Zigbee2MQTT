@@ -16,7 +16,6 @@ heating_frost_prevention:
 
 heating_boost_duration:
   name: Heating Boost Duration
-  initial: 15
   min: 5
   max: 45
   step: 5
