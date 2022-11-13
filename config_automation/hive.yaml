@@ -74,16 +74,11 @@
       - service: mqtt.publish
         data:
           topic: zigbee2mqtt/heating/set
-          payload_template: '{"temperature_setpoint_hold": true, "system_mode": "heat" }'
-      - delay: 0.5
-      - service: mqtt.publish
-        data:
-          topic: zigbee2mqtt/heating/set
           payload_template: '{
-            "temperature_setpoint_hold": true,
-            "system_mode": "heat",
+            "temperature_setpoint_hold_duration": 65535,
             "occupied_heating_setpoint": 18.0,
-            "temperature_setpoint_hold_duration": 65535 
+            "temperature_setpoint_hold": true,
+            "system_mode": "heat"
           }'
 
     - conditions:
