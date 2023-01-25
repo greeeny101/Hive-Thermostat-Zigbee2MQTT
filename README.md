@@ -79,7 +79,7 @@ Note that initial values will be reloaded when you restart the server. If you do
 then remove the initial value to preserve the current value following a restart
 
 
-## Simple Thermostat Config
+## Simple Thermostat Config (Heating Only (SLR1))
 
 ```angular2html
 type: custom:simple-thermostat
@@ -109,4 +109,45 @@ header:
   name: Heating
 
 
+```
+
+## Simple Thermostat Config (Heating & Water (SLR2))
+```angular2html
+type: custom:simple-thermostat
+entity: climate.heating_proxy
+hide:
+  temperature: true
+  state: true
+sensors:
+  - entity: sensor.heating_local_temperature
+    icon: mdi:home-thermometer-outline
+    unit: ' °C'
+  - entity: sensor.heating_running_state
+    icon: mdi:fire
+  - entity: sensor.heating_running_state_water
+    icon: mdi:water-thermometer
+  - entity: sensor.thermostat_battery
+    icon: mdi:battery
+layout:
+  step: row
+  mode:
+    headings: false
+    icons: true
+    names: false
+control:
+  hvac:
+    auto:
+      name: Schedule
+    cool:
+      name: Boost
+      icon: mdi:heat-wave
+    dry: null
+  swing:
+    auto:
+      name: Schedule
+    heat:
+      name: Water
+      icon: mdi:thermometer-water
+  name: Heating
+header: false
 ```

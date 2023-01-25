@@ -1,0 +1,151 @@
+mqtt:
+  sensor:
+    - unique_id: "heating_local_temperature_heat"
+      name: "Heating Local temperature Heating"
+      state_topic: "zigbee2mqtt/heating"
+      value_template: "{{ value_json.local_temperature_heat | round(1, 'floor') }}"
+      force_update: true
+
+    - unique_id: "heating_occupied_heating_setpoint_heat"
+      name: "Heating Occupied Heating Setpoint Heating"
+      state_topic: "zigbee2mqtt/heating"
+      unit_of_measurement: "°C"
+      value_template: "{{ value_json.occupied_heating_setpoint_heat }}"
+      force_update: true
+
+    - unique_id: "heating_system_mode_heat"
+      name: "Heating System Mode Heating"
+      state_topic: "zigbee2mqtt/heating"
+      value_template: "{{ value_json.system_mode_heat }}"
+      force_update: true
+
+    - unique_id: "heating_running_state_heat"
+      name: "Heating Running State Heating"
+      state_topic: "zigbee2mqtt/heating"
+      value_template: "{{ value_json.running_state_heat }}"
+      force_update: true
+
+    - unique_id: "heating_temperature_setpoint_hold_heat"
+      name: "Heating Temperature Setpoint Hold Heating"
+      state_topic: "zigbee2mqtt/heating"
+      force_update: true
+      value_template: "{{ value_json.temperature_setpoint_hold_heat }}"
+
+    - unique_id: "heating_temperature_setpoint_hold_duration_heat"
+      name: "Heating Temperature Setpoint Hold Duration Heat"
+      state_topic: "zigbee2mqtt/heating"
+      force_update: true
+      value_template: "{{ value_json.temperature_setpoint_hold_duration_heat }}"
+
+    - unique_id: "heating_local_temperature_water"
+      name: "Heating Local temperature Water"
+      state_topic: "zigbee2mqtt/heating"
+      value_template: "{{ value_json.local_temperature_water | round(1, 'floor') }}"
+      force_update: true
+
+    - unique_id: "heating_occupied_heating_setpoint_water"
+      name: "Heating Occupied Heating Setpoint Water"
+      state_topic: "zigbee2mqtt/heating"
+      unit_of_measurement: "°C"
+      value_template: "{{ value_json.occupied_heating_setpoint_water }}"
+      force_update: true
+
+    - unique_id: "heating_system_mode_water"
+      name: "Heating System Mode Water"
+      state_topic: "zigbee2mqtt/heating"
+      value_template: "{{ value_json.system_mode_water }}"
+      force_update: true
+
+    - unique_id: "heating_running_state_water"
+      name: "Heating Running State Water"
+      state_topic: "zigbee2mqtt/heating"
+      value_template: "{{ value_json.running_state_water }}"
+      force_update: true
+
+    - unique_id: "heating_temperature_setpoint_hold_water"
+      name: "Heating Temperature Setpoint Hold Water"
+      state_topic: "zigbee2mqtt/heating"
+      force_update: true
+      value_template: "{{ value_json.temperature_setpoint_hold_water }}"
+
+    - unique_id: "heating_temperature_setpoint_hold_duration_water"
+      name: "Heating Temperature Setpoint Hold Duration Water"
+      state_topic: "zigbee2mqtt/heating"
+      force_update: true
+      value_template: "{{ value_json.temperature_setpoint_hold_duration_water }}"
+
+  climate:
+    unique_id: "heating_proxy"
+    name: Heating Proxy
+    max_temp: 32
+    min_temp: 12
+    precision: 0.5
+    retain: false
+    qos: 0
+    payload_on: 1
+    payload_off: 0
+    temperature_unit: "C"
+    modes:
+      - "auto"
+      - "off"
+      - "heat"
+      - "cool"
+      #- "dry"
+    # Listen for changes published by the thermostat
+  
+    mode_state_topic: "zigbee2mqtt/heating"
+    mode_state_template: >-
+      {% if value_json.system_mode_heat == 'heat' and
+        value_json.temperature_setpoint_hold_duration_heat !=65535
+      %}
+        auto
+      {% elif value_json.system_mode_heat == 'emergency_heating' %}
+        cool
+      {% elif value_json.system_mode_heat == 'heat' and
+        value_json.temperature_setpoint_hold_duration_heat == 65535
+      %}
+        heat
+      {% elif value_json.system_mode_heat == 'off'%}
+        off
+      {% endif %}
+  
+    current_temperature_topic: "zigbee2mqtt/heating"
+    current_temperature_template: "{{value_json.local_temperature_heat}}"
+  
+    temperature_state_topic: "zigbee2mqtt/heating"
+    temperature_state_template: >-
+      {% if value_json.occupied_heating_setpoint_heat != 1 %}
+        {{value_json.occupied_heating_setpoint_heat}}
+      {% elif states("sensor.heating_system_mode_heating") == "off" %}
+        {{states("input_number.heating_frost_prevention")}}
+      {% elif states("sensor.heating_system_mode_heating") == "heat" and
+        states("sensor.heating_temperature_setpoint_hold_duration_heat_2") != 65536
+      %}
+        {{states("input_number.heating_frost_prevention")}}
+      {% endif %}
+
+    # added for water
+    swing_mode_state_topic: "zigbee2mqtt/heating"
+    swing_mode_state_template: >-
+      {% if value_json.system_mode_water == 'heat' and
+        value_json.temperature_setpoint_hold_duration_water !=65535
+      %}
+        auto
+      {% elif value_json.system_mode_water == 'heat' and
+        value_json.temperature_setpoint_hold_duration_water == 65535
+      %}
+        heat
+      {% elif value_json.system_mode_water == 'off'%}
+        off
+      {% endif %}
+    swing_modes: 
+      - "off"
+      - "heat"
+      - "auto"
+    swing_mode_command_topic: "zigbee2mqtt/heating_proxy/system_mode_water"
+
+    # get changes in the climate component and republish on the topic
+    # (Rather than going directly to the thermostat)
+  
+    temperature_command_topic: "zigbee2mqtt/heating_proxy/occupied_heating_setpoint"
+    mode_command_topic: "zigbee2mqtt/heating_proxy/system_mode"
