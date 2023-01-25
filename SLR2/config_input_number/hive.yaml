@@ -1,0 +1,37 @@
+input_number:
+  heating_manual_default:
+    name: Heating Default Temperature
+    min: 16
+    max: 22
+    step: 0.5
+
+  heating_boost_temperature:
+    name: Heating Boost Temperature
+    initial: 25
+    min: 12
+    max: 32
+    step: 0.5
+    icon: "mdi:heat-wave"
+    mode: slider
+  
+  heating_frost_prevention:
+    name: Heating Frost Prevention
+    initial: 12
+    min: 5
+    max: 16
+    step: 0.5
+    icon: "mdi:snowflake-thermometer"
+  
+  heating_boost_duration:
+    name: Heating Boost Duration
+    initial: 30
+    min: 5
+    max: 60
+    step: 5
+    icon: "mdi:timer"
+    mode: slider
+
+timer:
+  heating_boost_duration:
+    name: Boost remaining
+    duration: 254
