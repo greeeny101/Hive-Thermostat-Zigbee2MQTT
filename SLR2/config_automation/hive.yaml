@@ -17,7 +17,7 @@ automation:
         - service: mqtt.publish
           data:
             topic: zigbee2mqtt/heating/set
-            payload_template: '{"occupied_heating_setpoint_heat":"{{trigger.payload}}"}' 
+            payload_template: '{"occupied_heating_setpoint_heat": {{trigger.payload}}}' 
       - conditions:
         - condition: template
           value_template: "{{ states('sensor.heating_system_mode_heating') == 'off'}}"
