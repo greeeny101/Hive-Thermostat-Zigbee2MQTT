@@ -51,7 +51,8 @@ I want to be able to do the same thing in HA
 
 ## Requirements
 
-HA and Zigbee2MQTT
+HA
+Zigbee2MQTT minimum version 1.34.0-1 
 
 MQTT HVAC integration
 
