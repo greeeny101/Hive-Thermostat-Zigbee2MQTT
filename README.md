@@ -4,6 +4,10 @@
 Configuration for a Hive thermostat that aims to recreate the actions found
 on the hive remote
 
+***I've now moved to a custom HACS integration (SLR1C ONLY) that you can find here https://community.home-assistant.io/t/heating-panel-a-phone-friendly-control-for-hive-receivers-on-zigbee2mqtt-boost-away-schedules/1030723
+It addresses the setup complexity and missing/flaky functionality that can be found here***
+
+
 ## Introduction
 
 The climate integration in HA sends MQTT messages to a topic
